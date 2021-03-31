@@ -7,7 +7,7 @@ var activeTab;
 // clears and generates table if depth is valid
 function depthEntered() {
   depth = document.getElementById("depth_form").value;
-  if (depth != "" && !isNaN(depth)) {
+  if (depth != "" && !isNaN(depth) && depth >= 0) {
     if (depth > 6) {
       document.getElementById("depth_error_text").innerHTML =
         "Depth <=6 pls :(";
@@ -60,10 +60,19 @@ function createUIBFunction(i, j) {
   };
 }
 
+function uncolorInputBorder(i, j) {
+  var cellij = document.getElementById("cell" + i + j);
+  colorCell(cellij, "base");
+}
+
 function createDLIFunction(i, j) {
   return function () {
     disableLeafInput(i, j);
   };
+}
+
+function disableLeafInput(i, j) {
+  document.getElementById("leaf_value" + i + j).disabled = true;
 }
 
 function createELIFunction(i, j) {
@@ -72,17 +81,49 @@ function createELIFunction(i, j) {
   };
 }
 
-function uncolorInputBorder(i, j) {
-  var cellij = document.getElementById("cell" + i + j);
-  colorCell(cellij, "base");
-}
-
-function disableLeafInput(i, j) {
-  document.getElementById("leaf_value" + i + j).disabled = true;
-}
-
 function enableLeafInput(i, j) {
   document.getElementById("leaf_value" + i + j).disabled = false;
+}
+
+function createGRCCFunction(i, j) {
+  return function () {
+    generateRoseChildrenCells(i, j);
+  };
+}
+
+function generateRoseChildrenCells(indexList) {
+  let count = document.getElementById("rose_list_length" + i + j);
+  if (count > table.rows[i].cells.length)
+  for (var i = 0; i < depth; i++) {
+    let row = table.insertRow();
+    for (var j = 0; j < Math.pow(2, i); j++) {
+      var cell = row.insertCell();
+      cell.colSpan = Math.pow(2, depth - 1 - i);
+      cell.align = "center";
+      switch (activeTab) {
+        case "tree":
+          cell.appendChild(newTreeCell(i, j));
+          break;
+        case "shrub":
+          cell.appendChild(newShrubCell(i, j));
+          if (i < depth - 1) {
+            document.getElementById(
+              "node_btn" + i + j
+            ).onchange = createUIBFunction(i, j);
+            document.getElementById(
+              "node_btn" + i + j
+            ).onclick = createDLIFunction(i, j);
+            document.getElementById(
+              "leaf_btn" + i + j
+            ).onchange = createUIBFunction(i, j);
+            document.getElementById(
+              "leaf_btn" + i + j
+            ).onclick = createELIFunction(i, j);
+          }
+          break;
+      }
+    }
+  }
 }
 
 function colorCell(cell, color) {
@@ -149,8 +190,49 @@ function newShrubCell(i, j) {
   return div;
 }
 
+function newRoseCell(indexList) {
+  // create div container
+  var div = document.createElement("div");
+  div.id = "cell" + indexList.join('');
+  div.classList.add("left-inner");
+  div.classList.add("rose-div");
+  div.align = "left";
+  colorCell(div, "base");
+
+  div.innerHTML += "Rose: ";
+  var roseValue = document.createElement("input");
+  roseValue.type = "text";
+  roseValue.size = "5";
+  roseValue.id = "rose_value" + i + j;
+  roseValue.placeholder = "value";
+  div.appendChild(roseValue);
+
+  div.innerHTML += "<br/>";
+
+  var listLengthValue = document.createElement("input");
+  listLengthValue.type = "number";
+  listLengthValue.size = "3";
+  listLengthValue.min = "0";
+  listLengthValue.max = "5";
+  listLengthValue.id = "rose_list_length" + i + j;
+  listLengthValue.placeholder = "0";
+  listLengthValue.onchange = createGRCCFunction(i, j);
+
+  div.appendChild(listLengthValue);
+  div.innerHTML += " children";
+
+  return div;
+}
+
 function generateInputTable() {
-  if (depth == 0) {
+  if (activeTab === "rose") {
+    console.log("generateInputTable for rose");
+    let row = table.insertRow();
+    let cell = row.insertCell();
+    cell.colSpan = 1;
+    cell.align = "center";
+    cell.appendChild(newRoseCell([0]));
+  } else if (depth == 0) {
     let row = table.insertRow();
     let cell = row.insertCell();
     cell.innerHTML = "Zero depth";
@@ -274,6 +356,7 @@ function openTab(evt, tabName) {
   // Declare all variables
   var i, tabContent, tabLinks, toSMLContent, fromSMLContent;
   activeTab = tabName;
+  depth = null;
 
   // Get all elements with class="tab-content" and hide them
   tabContent = document.getElementsByClassName("tab-content");
@@ -293,15 +376,23 @@ function openTab(evt, tabName) {
 
   toSMLContent = document.getElementById("to_sml_content");
   fromSMLContent = document.getElementById("from_sml_content");
+  depthContent = document.getElementById("depth_content");
 
-  if (tabName.localeCompare("sml")) {
-    toSMLContent.style.display = "block";
-    fromSMLContent.style.display = "none";
-  } else {
+  if (tabName === "sml") {
     toSMLContent.style.display = "none";
     fromSMLContent.style.display = "block";
+  } else {
+    toSMLContent.style.display = "block";
+    fromSMLContent.style.display = "none";
   }
   resetPage();
+  if (tabName === "rose") {
+    depthContent.style.display = "none";
+    clearTable();
+    generateInputTable();
+  } else {
+    depthContent.style.display = "block";
+  }
 }
 
 const depthForm = document.getElementById("depth_form");

@@ -108,6 +108,10 @@ td {
   width: 150px;
 }
 
+.rose-div {
+  width: 120px;
+}
+
 .valid-cell {
   border: 2px solid green;
 }
