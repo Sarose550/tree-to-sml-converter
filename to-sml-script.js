@@ -168,7 +168,7 @@ function newShrubCell(i, j) {
     nodeBtn.name = "radio" + i + j;
     div.appendChild(nodeBtn);
 
-    div.innerHTML += "Node<br/>";
+    div.innerHTML += "Branch<br/>";
 
     // create Leaf radio button
     var leafBtn = document.createElement("input");
@@ -318,7 +318,7 @@ function treeTextHelper(i, j) {
       if (document.getElementById("node_btn" + i + j).checked) {
         colorCell(cellij, "valid");
         return (
-          "Node(" +
+          "Branch(" +
           treeTextHelper(i + 1, j * 2) +
           "," +
           treeTextHelper(i + 1, j * 2 + 1) +
