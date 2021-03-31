@@ -7,7 +7,7 @@ var activeTab;
 // clears and generates table if depth is valid
 function depthEntered() {
   depth = document.getElementById("depth_form").value;
-  if (depth != "" && !isNaN(depth)) {
+  if (depth != "" && !isNaN(depth) && depth >= 0) {
     if (depth > 6) {
       document.getElementById("depth_error_text").innerHTML =
         "Depth <=6 pls :(";
@@ -127,7 +127,7 @@ function newShrubCell(i, j) {
     nodeBtn.name = "radio" + i + j;
     div.appendChild(nodeBtn);
 
-    div.innerHTML += "Node<br/>";
+    div.innerHTML += "Branch<br/>";
 
     // create Leaf radio button
     var leafBtn = document.createElement("input");
@@ -236,7 +236,7 @@ function treeTextHelper(i, j) {
       if (document.getElementById("node_btn" + i + j).checked) {
         colorCell(cellij, "valid");
         return (
-          "Node(" +
+          "Branch(" +
           treeTextHelper(i + 1, j * 2) +
           "," +
           treeTextHelper(i + 1, j * 2 + 1) +
@@ -274,6 +274,7 @@ function openTab(evt, tabName) {
   // Declare all variables
   var i, tabContent, tabLinks, toSMLContent, fromSMLContent;
   activeTab = tabName;
+  depth = null;
 
   // Get all elements with class="tab-content" and hide them
   tabContent = document.getElementsByClassName("tab-content");
