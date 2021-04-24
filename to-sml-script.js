@@ -3,32 +3,130 @@ var treeArray;
 var table;
 var activeTab;
 
-// called when "Enter depth" clicked
-// clears and generates table if depth is valid
+function setDepthErrorText(str) {
+  document.getElementById("depth_error_text").innerHTML = str;
+}
+
+function setNegativeWarningText(str) {
+  document.getElementById("negative_warning_text").innerHTML = str;
+}
+
+function setTableWarningText(str) {
+  document.getElementById("table_warning_text").innerHTML = str;
+}
+
+function resetWarningText() {
+  setTableWarningText("");
+  setNegativeWarningText("");
+}
+
+function setSMLOutputText(str) {
+  document.getElementById("sml_output_text").innerHTML = str;
+}
+
+function resetDepth() {
+  document.getElementById("depth_form").value = "";
+  document.getElementById("generate_sml_text_btn").disabled = true;
+}
+
+/**
+ * Checks for non-negative integer depth < 6.
+ * Sets appropriate error text if necessary.
+ * @param depth int that specifies depth
+ */
+function validateDepth(d) {
+  if (d == "" || isNaN(d)) {
+    setDepthErrorText("Depth must be a non-negative integer.");
+    return false;
+  }
+  if (d < 0) {
+    setDepthErrorText("Depth must be a non-negative integer.");
+    return false;
+  }
+  if (d > 6) {
+    setDepthErrorText("Depth <=6 pls :(");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Called when "Enter depth" is clicked.
+ * Sets global depth var.
+ * Validates depth.
+ * If valid, clears table, error text, and generates input table
+ */
 function depthEntered() {
+  // sets global depth variable
   depth = document.getElementById("depth_form").value;
-  if (depth != "" && !isNaN(depth) && depth >= 0) {
-    if (depth > 6) {
-      document.getElementById("depth_error_text").innerHTML =
-        "Depth <=6 pls :(";
-    } else {
-      clearTable();
-      document.getElementById("depth_error_text").innerHTML = "";
-      document.getElementById("negative_warning_text").innerHTML = "";
-      generateInputTable();
-    }
-  } else {
-    document.getElementById("depth_error_text").innerHTML =
-      "Depth must be a non-negative integer.";
+  if (validateDepth(depth)) {
+    // clear table
+    clearTable();
+    // clear error text
+    resetWarningText();
+    // generate input table
+    generateInputTable();
+    // enable generate sml text btn
+    document.getElementById("generate_sml_text_btn").disabled = false;
   }
 }
 
+/**
+ * Generate the input table for a tree or shrub datatype given the depth.
+ */
+function generateInputTable() {
+  if (depth == 0) {
+    let row = table.insertRow();
+    let cell = row.insertCell();
+    cell.innerHTML = "Zero depth";
+  } else {
+    for (var i = 0; i < depth; i++) {
+      let row = table.insertRow();
+      for (var j = 0; j < Math.pow(2, i); j++) {
+        var cell = row.insertCell();
+        cell.colSpan = Math.pow(2, depth - 1 - i);
+        cell.align = "center";
+        switch (activeTab) {
+          case "tree":
+            cell.appendChild(newTreeCell(i, j));
+            break;
+          case "shrub":
+            cell.appendChild(newShrubCell(i, j));
+            if (i < depth - 1) {
+              document.getElementById(
+                "node_btn" + i + j
+              ).onchange = createUIBFunction(i, j);
+              document.getElementById(
+                "node_btn" + i + j
+              ).onclick = createLeafEnableFunction(i, j, false);
+              document.getElementById(
+                "leaf_btn" + i + j
+              ).onchange = createUIBFunction(i, j);
+              document.getElementById(
+                "leaf_btn" + i + j
+              ).onclick = createLeafEnableFunction(i, j, true);
+            }
+            break;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Clears the table of all its children.
+ */
 function clearTable() {
   while (table.firstChild) {
     table.removeChild(table.firstChild);
   }
 }
 
+/**
+ * Set the global table var.
+ * Clears the table.
+ * Creates a dummy "Node table will appear here" cell.
+ */
 function resetTable() {
   switch (activeTab) {
     case "sml":
@@ -37,92 +135,30 @@ function resetTable() {
     default:
       table = document.getElementById("input_table");
   }
+  // clear table
   clearTable();
+
+  // insert initial dummy cell
   let row = table.insertRow();
   let cell = row.insertCell();
   var text = document.createTextNode("Node table will appear here");
   cell.appendChild(text);
 }
 
+function isConvertingToSML() {
+  return activeTab.localeCompare("sml") != 0;
+}
+
+/**
+ * Reset the table.
+ * Reset the error text.
+ * Reset the SML output text.
+ */
 function resetPage() {
   resetTable();
-  if (activeTab.localeCompare("sml") != 0) {
-    document.getElementById("table_warning_text").innerHTML = "";
-    document.getElementById("negative_warning_text").innerHTML = "";
-    document.getElementById("sml_output_text").innerHTML =
-      "~SML Text will appear here~";
-  }
-}
-
-function createUIBFunction(i, j) {
-  return function () {
-    uncolorInputBorder(i, j);
-  };
-}
-
-function uncolorInputBorder(i, j) {
-  var cellij = document.getElementById("cell" + i + j);
-  colorCell(cellij, "base");
-}
-
-function createDLIFunction(i, j) {
-  return function () {
-    disableLeafInput(i, j);
-  };
-}
-
-function disableLeafInput(i, j) {
-  document.getElementById("leaf_value" + i + j).disabled = true;
-}
-
-function createELIFunction(i, j) {
-  return function () {
-    enableLeafInput(i, j);
-  };
-}
-
-function enableLeafInput(i, j) {
-  document.getElementById("leaf_value" + i + j).disabled = false;
-}
-
-function createGRCCFunction(i, j) {
-  return function () {
-    generateRoseChildrenCells(i, j);
-  };
-}
-
-function generateRoseChildrenCells(indexList) {
-  let count = document.getElementById("rose_list_length" + i + j);
-  if (count > table.rows[i].cells.length)
-  for (var i = 0; i < depth; i++) {
-    let row = table.insertRow();
-    for (var j = 0; j < Math.pow(2, i); j++) {
-      var cell = row.insertCell();
-      cell.colSpan = Math.pow(2, depth - 1 - i);
-      cell.align = "center";
-      switch (activeTab) {
-        case "tree":
-          cell.appendChild(newTreeCell(i, j));
-          break;
-        case "shrub":
-          cell.appendChild(newShrubCell(i, j));
-          if (i < depth - 1) {
-            document.getElementById(
-              "node_btn" + i + j
-            ).onchange = createUIBFunction(i, j);
-            document.getElementById(
-              "node_btn" + i + j
-            ).onclick = createDLIFunction(i, j);
-            document.getElementById(
-              "leaf_btn" + i + j
-            ).onchange = createUIBFunction(i, j);
-            document.getElementById(
-              "leaf_btn" + i + j
-            ).onclick = createELIFunction(i, j);
-          }
-          break;
-      }
-    }
+  if (isConvertingToSML()) {
+    resetWarningText();
+    setSMLOutputText("~SML Text will appear here~");
   }
 }
 
@@ -139,6 +175,35 @@ function colorCell(cell, color) {
   }
 }
 
+function getCell(i, j) {
+  return document.getElementById("cell" + i + j);
+}
+
+function createUIBFunction(i, j) {
+  return function () {
+    uncolorInputBorder(i, j);
+  };
+}
+
+function uncolorInputBorder(i, j) {
+  colorCell(getCell(i, j), "base");
+}
+
+function getLeaf(i, j) {
+  return document.getElementById("leaf_value" + i + j);
+}
+
+function createLeafEnableFunction(i, j, enable) {
+  return function () {
+    getLeaf(i, j).disabled = !enable;
+  };
+}
+
+/**
+ * Creates and returns an input element with id "cellij"
+ * @param i The 0-indexed row of the cell
+ * @param j The 0-indexed column of the cell
+ */
 function newTreeCell(i, j) {
   var input = document.createElement("input");
   input.type = "text";
@@ -150,6 +215,14 @@ function newTreeCell(i, j) {
   return input;
 }
 
+/**
+ * Creates and returns a div element with id "cellij".
+ * The div contains a Leaf input element.
+ * The div also contains radio button toggles and a Branch option if the cell
+ * is not on the last row.
+ * @param i The 0-indexed row of the cell
+ * @param j The 0-indexed column of the cell
+ */
 function newShrubCell(i, j) {
   // create div container
   var div = document.createElement("div");
@@ -190,102 +263,23 @@ function newShrubCell(i, j) {
   return div;
 }
 
-function newRoseCell(indexList) {
-  // create div container
-  var div = document.createElement("div");
-  div.id = "cell" + indexList.join('');
-  div.classList.add("left-inner");
-  div.classList.add("rose-div");
-  div.align = "left";
-  colorCell(div, "base");
-
-  div.innerHTML += "Rose: ";
-  var roseValue = document.createElement("input");
-  roseValue.type = "text";
-  roseValue.size = "5";
-  roseValue.id = "rose_value" + i + j;
-  roseValue.placeholder = "value";
-  div.appendChild(roseValue);
-
-  div.innerHTML += "<br/>";
-
-  var listLengthValue = document.createElement("input");
-  listLengthValue.type = "number";
-  listLengthValue.size = "3";
-  listLengthValue.min = "0";
-  listLengthValue.max = "5";
-  listLengthValue.id = "rose_list_length" + i + j;
-  listLengthValue.placeholder = "0";
-  listLengthValue.onchange = createGRCCFunction(i, j);
-
-  div.appendChild(listLengthValue);
-  div.innerHTML += " children";
-
-  return div;
-}
-
-function generateInputTable() {
-  if (activeTab === "rose") {
-    console.log("generateInputTable for rose");
-    let row = table.insertRow();
-    let cell = row.insertCell();
-    cell.colSpan = 1;
-    cell.align = "center";
-    cell.appendChild(newRoseCell([0]));
-  } else if (depth == 0) {
-    let row = table.insertRow();
-    let cell = row.insertCell();
-    cell.innerHTML = "Zero depth";
-  } else {
-    for (var i = 0; i < depth; i++) {
-      let row = table.insertRow();
-      for (var j = 0; j < Math.pow(2, i); j++) {
-        var cell = row.insertCell();
-        cell.colSpan = Math.pow(2, depth - 1 - i);
-        cell.align = "center";
-        switch (activeTab) {
-          case "tree":
-            cell.appendChild(newTreeCell(i, j));
-            break;
-          case "shrub":
-            cell.appendChild(newShrubCell(i, j));
-            if (i < depth - 1) {
-              document.getElementById(
-                "node_btn" + i + j
-              ).onchange = createUIBFunction(i, j);
-              document.getElementById(
-                "node_btn" + i + j
-              ).onclick = createDLIFunction(i, j);
-              document.getElementById(
-                "leaf_btn" + i + j
-              ).onchange = createUIBFunction(i, j);
-              document.getElementById(
-                "leaf_btn" + i + j
-              ).onclick = createELIFunction(i, j);
-            }
-            break;
-        }
-      }
-    }
-  }
-}
-
+/**
+ * Returns the SML version of the tree rooted at cell i, j
+ * @param i The 0-indexed row of the cell root
+ * @param j The 0-indexed column of the cell root
+ */
 function treeTextHelper(i, j) {
-  if (depth == null || depth == "") {
-    return "Enter depth first, please!";
-  }
   if (i == depth) {
     // shouldn't be possible for shrubs
     return "Empty";
   }
-  var cellij = document.getElementById("cell" + i + j);
+  var cellij = getCell(i, j);
   switch (activeTab) {
     case "tree":
       if (cellij.value == "") return "Empty";
       colorCell(cellij, "valid");
       if (cellij.value.includes("-")) {
-        document.getElementById("negative_warning_text").innerHTML =
-          "Warning: Negative sign used instead of ~";
+        setNegativeWarningText("Warning: Negative sign used instead of ~");
       }
       return (
         "Node(" +
@@ -303,16 +297,14 @@ function treeTextHelper(i, j) {
         i == depth - 1 ||
         document.getElementById("leaf_btn" + i + j).checked
       ) {
-        var leafValueij = document.getElementById("leaf_value" + i + j);
+        var leafij = getLeaf(i, j).value;
         colorCell(cellij, "valid");
-        if (leafValueij.value == "")
-          document.getElementById("table_warning_text").innerHTML =
-            "Warning: Empty leaf value";
-        if (leafValueij.value.includes("-")) {
-          document.getElementById("negative_warning_text").innerHTML =
-            "Warning: Negative sign used instead of ~";
+        if (leafij.value == "")
+          setTableWarningText("Warning: Empty leaf value");
+        if (leafij.value.includes("-")) {
+          setNegativeWarningText("Warning: Negative sign used instead of ~");
         }
-        return "Leaf(" + leafValueij.value + ")";
+        return "Leaf(" + leafij.value + ")";
       }
       // node cell
       if (document.getElementById("node_btn" + i + j).checked) {
@@ -331,17 +323,25 @@ function treeTextHelper(i, j) {
       } else {
         throw "Node without valid children";
       }
+      break;
   }
 }
 
+/**
+ * Called when 'Generate SML Text' button clicked
+ */
 function generateText() {
-  document.getElementById("table_warning_text").innerHTML = "";
-  document.getElementById("negative_warning_text").innerHTML = "";
+  // reset error text
+  resetWarningText();
+
+  // uncolor all input borders
   for (var i = 0; i < depth; i++) {
     for (var j = 0; j < Math.pow(2, i); j++) {
       uncolorInputBorder(i, j);
     }
   }
+
+  // compute SML text from tree/shrub
   var text;
   try {
     text = treeTextHelper(0, 0);
@@ -349,24 +349,30 @@ function generateText() {
     console.log(e);
     text = "Node must have 2 valid children.";
   }
-  document.getElementById("sml_output_text").innerHTML = text;
+
+  // set SML output text
+  setSMLOutputText(text);
 }
 
+/**
+ * Called when the user opens a certain tab.
+ */
 function openTab(evt, tabName) {
   // Declare all variables
-  var i, tabContent, tabLinks, toSMLContent, fromSMLContent;
+  var tabContent, tabLinks, toSMLContent, fromSMLContent;
+
   activeTab = tabName;
   depth = null;
 
   // Get all elements with class="tab-content" and hide them
   tabContent = document.getElementsByClassName("tab-content");
-  for (i = 0; i < tabContent.length; i++) {
+  for (let i = 0; i < tabContent.length; i++) {
     tabContent[i].style.display = "none";
   }
 
   // Get all elements with class="tab-links" and remove the class "active"
   tabLinks = document.getElementsByClassName("tab-links");
-  for (i = 0; i < tabLinks.length; i++) {
+  for (let i = 0; i < tabLinks.length; i++) {
     tabLinks[i].className = tabLinks[i].className.replace(" active", "");
   }
   evt.currentTarget.className += " active";
@@ -385,13 +391,15 @@ function openTab(evt, tabName) {
     toSMLContent.style.display = "block";
     fromSMLContent.style.display = "none";
   }
+
   resetPage();
+
   if (tabName === "rose") {
     depthContent.style.display = "none";
-    clearTable();
-    generateInputTable();
+    generateRoseTable();
   } else {
     depthContent.style.display = "block";
+    resetDepth();
   }
 }
 
@@ -401,6 +409,7 @@ depthForm.addEventListener("keyup", function (event) {
     document.getElementById("enter_depth_btn").onclick();
   }
 });
+
 const smlForm = document.getElementById("sml_form");
 smlForm.addEventListener("keyup", function (event) {
   if (event.key === "Enter") {
