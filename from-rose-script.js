@@ -3,7 +3,11 @@ function getRoseValue(indicesStr) {
 }
 
 function getRoseChildCountValue(indicesStr) {
-  return document.getElementById("rose_child_count" + indicesStr).value;
+  var count = document.getElementById("rose_child_count" + indicesStr).value;
+  if (isNaN(count) || count === "") {
+    return 0;
+  }
+  return Math.max(Math.min(count, 5), 0);
 }
 
 function getRoseChildRow(indicesStr) {
