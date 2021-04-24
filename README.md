@@ -6,19 +6,21 @@ This page is meant to help both develop and visualize tree test cases to encoura
 ## Features
 - Tree-to-SML conversion
 - SML-to-Tree conversion
+- Rose-to-SML conversion
 - Shrub-to-SML conversion
 
 The datatypes for the output are defined as follows:
 ```
-datatype 'a tree = Empty | Node of 'a tree * 'a * 'a tree.
-datatype 'a shrub = Empty | Leaf of 'a | Branch of 'a shrub * 'a shrub.
+datatype 'a tree = Empty | Node of 'a tree * 'a * 'a tree
+datatype 'a shrub = Empty | Leaf of 'a | Branch of 'a shrub * 'a shrub
+datatype 'a rose = Rose of 'a * 'a rose list
 ```
 The trees/shrubs are represented as a table.
 
 The SML-to-Tree conversion does not handle SML texts with parentheses and commas within quotations.
 For Tree/Shrub-to-SML conversion, valid nodes (aka non-empty nodes that have a valid path to the root) are given a green border when the SML text is generated.
 <br />
-><img src="treesite.png" width="600">
+><img src="tree-site.png" width="600">
 
 Built with HTML, CSS, JavaScript.
 

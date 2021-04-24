@@ -185,15 +185,6 @@ function generateRoseText() {
   // // reset error text
   resetWarningText();
 
-  console.log("generate rose text");
-
-  // uncolor all input borders
-  // for (var i = 0; i < depth; i++) {
-  //   for (var j = 0; j < Math.pow(2, i); j++) {
-  //     uncolorInputBorder(i, j);
-  //   }
-  // }
-
   // compute SML text from tree/shrub
   var text;
   try {
