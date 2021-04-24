@@ -45,7 +45,10 @@ function generateRoseChildren(rootIndicesStr) {
       // console.log("added a child");
       var cell = childRow.insertCell();
       setAttributes(cell, { colSpan: 1, align: "center" });
-      addRoseToCell(cell, newRoseCell(rootIndicesStr + i), rootIndicesStr + i);
+      cell.appendChild(newRoseCell(rootIndicesStr + i));
+      document.getElementById(
+        "rose_child_count" + rootIndicesStr + i
+      ).oninput = createGenerateRoseChildrenFunction(rootIndicesStr + i);
     }
   } else {
     // console.log("correct");
@@ -137,20 +140,16 @@ function newRoseCell(indicesStr) {
   return table;
 }
 
-function addRoseToCell(cell, roseCell, indicesStr) {
-  cell.appendChild(roseCell);
-  document.getElementById(
-    "rose_child_count" + indicesStr
-  ).oninput = createGenerateRoseChildrenFunction(indicesStr);
-}
-
 function generateRoseTable() {
   // console.log("generateInputTable for rose");
   clearTable();
   var row = table.insertRow();
   var cell = row.insertCell();
   setAttributes(cell, { colSpan: 1, align: "center" });
-  addRoseToCell(cell, newRoseCell("0"), indicesStr);
+  cell.appendChild(newRoseCell("0"));
+  document.getElementById(
+    "rose_child_count0"
+  ).oninput = createGenerateRoseChildrenFunction("0");
 }
 
 /**
