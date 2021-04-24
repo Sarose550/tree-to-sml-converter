@@ -2,7 +2,7 @@ marquee {
   color: white;
 }
 
-table {
+#input_table {
   border: 2px solid green;
   font-family: monospace;
   color: gray;
