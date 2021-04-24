@@ -1,94 +1,157 @@
-function createGRCCFunction(i, j) {
-    return function () {
-      generateRoseChildrenCells(i, j);
-    };
-  }
+function getRoseValue(indexList) {
+  return document.getElementById("rose_value" + indexList.join(""));
+}
 
-  function generateRoseChildrenCells(indexList) {
-    let count = document.getElementById("rose_list_length" + indexList.join(''));
-    if (count > table.rows[i].cells.length)
-      for (var i = 0; i < depth; i++) {
-        let row = table.insertRow();
-        for (var j = 0; j < Math.pow(2, i); j++) {
-          var cell = row.insertCell();
-          cell.colSpan = Math.pow(2, depth - 1 - i);
-          cell.align = "center";
-          switch (activeTab) {
-            case "tree":
-              cell.appendChild(newTreeCell(i, j));
-              break;
-            case "shrub":
-              cell.appendChild(newShrubCell(i, j));
-              if (i < depth - 1) {
-                document.getElementById(
-                  "node_btn" + i + j
-                ).onchange = createUIBFunction(i, j);
-                document.getElementById(
-                  "node_btn" + i + j
-                ).onclick = createDLIFunction(i, j);
-                document.getElementById(
-                  "leaf_btn" + i + j
-                ).onchange = createUIBFunction(i, j);
-                document.getElementById(
-                  "leaf_btn" + i + j
-                ).onclick = createELIFunction(i, j);
-              }
-              break;
-          }
-        }
-      }
-  }
+function getRoseChildCountValue(indexList) {
+  return document.getElementById("rose_child_count" + indexList.join(""));
+}
 
-  /**
- * Creates and returns a div element with id "cellij".
- * The div contains a Leaf input element.
- * The div also contains radio button toggles and a Branch option if the cell
- * is not on the last row.
- * @param i The 0-indexed row of the cell
- * @param j The 0-indexed column of the cell
+function getCurrRoseChildCount(indexList) {
+  return document.getElementById("rose_children_row" + indexList.join("")).cells
+    .length;
+}
+
+function getRoseChildRow(indexList) {
+  return document.getElementById("rose_children_row" + indexList.join(""));
+}
+
+/**
+ * Clears the table of all its children.
  */
-function newRoseCell(indexList) {
-    // create div container
-    var div = document.createElement("div");
-    div.id = "cell" + indexList.join("");
-    div.classList.add("left-inner");
-    div.classList.add("rose-div");
-    div.align = "left";
-    colorCell(div, "base");
 
-    div.innerHTML += "Rose: ";
-    var roseValue = document.createElement("input");
-    roseValue.type = "text";
-    roseValue.size = "5";
+function createGenerateRoseChildrenFunction(rootIndexList) {
+  return generateRoseChildren(rootIndexList);
+}
 
-    roseValue.id = "rose_value" + indexList.join('');
-    roseValue.placeholder = "value";
-    div.appendChild(roseValue);
-
-    div.innerHTML += "<br/>";
-
-    var listLengthValue = document.createElement("input");
-    listLengthValue.type = "number";
-    listLengthValue.size = "3";
-    listLengthValue.min = "0";
-    listLengthValue.max = "5";
-    listLengthValue.id = "rose_list_length" + indexList.join('');
-    listLengthValue.placeholder = "0";
-    listLengthValue.onchange = createGRCCFunction(indexList);
-
-    div.appendChild(listLengthValue);
-    div.innerHTML += " children";
-
-    return div;
-  }
-
-  function generateRoseTable() {
-    if (activeTab === "rose") {
-      console.log("generateInputTable for rose");
-      let row = table.insertRow();
+function generateRoseChildren(rootIndexList) {
+  console.log(rootIndexList);
+  let childCount = getRoseChildCountValue(rootIndexList);
+  let childRow = getRoseChildRow(rootIndexList);
+  if (childCount < childRow.cells.length) {
+    while (childCount < childRow.cells.length) {
+      childRow.removeChild(childRow.lastChild);
+    }
+  } else {
+    let i = childRow.cells.length;
+    for (; i < childCount; i++) {
       let cell = row.insertCell();
-      cell.colSpan = 1;
-      cell.align = "center";
-      cell.appendChild(newRoseCell([0]));
+      setAttributes(cell, { colSpan: 1, align: "center" });
+      cell.appendChild(newRoseCell([...rootIndexList].push(i)));
     }
   }
+}
+
+function setAttributes(el, attrs) {
+  for (var key in attrs) {
+    el.setAttribute(key, attrs[key]);
+  }
+}
+
+function printHello(indicesStr) {
+  console.log(ev);
+  console.log("hello" + indicesStr);
+}
+
+function createPrintHello(indicesStr) {
+    return function () {
+        printHello(indicesStr);
+    }
+}
+
+function newRoseValueInput(indicesStr) {
+  var roseValue = document.createElement("input");
+  setAttributes(roseValue, {
+    type: "text",
+    size: "6",
+    id: "rose_value" + indicesStr,
+    placeholder: "value",
+  });
+  return roseValue;
+}
+
+function newRoseChildCountInput(indicesStr) {
+  var childCountValue = document.createElement("input");
+  childCountValue.type = "number";
+  childCountValue.size = 3;
+  childCountValue.min = 0;
+  childCountValue.max = 5;
+  childCountValue.id = "rose_child_count" + indicesStr;
+  childCountValue.value = 0;
+  childCountValue.placeholder = 0;
+  childCountValue.oninput = createPrintHello(indicesStr);
+  // childCountValue.oninput = createGenerateRoseChildrenFunction(indexList);
+  return childCountValue;
+}
+
+/**
+ * Creates and returns a table element with id "cellij".
+ * The div contains a Rose Value input element and a numeric input for children
+ * count/list length
+ * @param L The list of indices you traverse from the root to reach the cell
+ */
+function newRoseCell(indicesStr) {
+  // create table container
+  var table = document.createElement("table");
+  let row = table.insertRow();
+  let cell = row.insertCell();
+  setAttributes(cell, { colSpan: 1, align: "center" });
+
+  var div = document.createElement("div");
+  setAttributes(div, { id: "cell" + indicesStr, align: "left" });
+  div.classList.add("left-inner", "rose-div");
+  colorCell(div, "base");
+  div.innerHTML += "Rose: ";
+
+  div.appendChild(newRoseValueInput(indicesStr));
+
+  div.innerHTML += "<br/>";
+
+  div.appendChild(newRoseChildCountInput(indicesStr));
+  div.innerHTML += " children";
+
+  cell.appendChild(div);
+
+  let row2 = table.insertRow();
+  setAttributes(row2, {
+    id: "rose_children_row" + indicesStr,
+  });
+
+  return table;
+}
+
+function generateRoseTable() {
+  // console.log("generateInputTable for rose");
+  let row = table.insertRow();
+  let cell = row.insertCell();
+  setAttributes(cell, { colSpan: 1, align: "center" });
+  cell.appendChild(newRoseCell("0"));
+}
+
+/**
+ * Called when 'Generate SML Text' button clicked
+ */
+function generateRoseText() {
+  // // reset error text
+  // resetWarningText();
+
+  console.log("generate rose text");
+
+  // uncolor all input borders
+  //   for (var i = 0; i < depth; i++) {
+  //     for (var j = 0; j < Math.pow(2, i); j++) {
+  //       uncolorInputBorder(i, j);
+  //     }
+  //   }
+
+  //   // compute SML text from tree/shrub
+  //   var text;
+  //   try {
+  //     text = treeTextHelper(0, 0);
+  //   } catch (e) {
+  //     console.log(e);
+  //     text = "Node must have 2 valid children.";
+  //   }
+
+  //   // set SML output text
+  //   setSMLOutputText(text);
+}

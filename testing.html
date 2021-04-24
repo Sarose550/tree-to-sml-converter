@@ -18,34 +18,24 @@
   <div align="center" id="to_sml_content">
     2. Enter node values:
     <br />
-    <table id="input_table">
-      <tr>
-        <td align="center" colspan="2">
-          <input type="text" size="5" id="cell00" placeholder="value" class="base-cell">
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table id="input_table">
-            <tr>
-              <td>
-                <input type="text" size="5" id="cell00" placeholder="value" class="base-cell">
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td>
-          <table id="input_table">
-            <tr>
-              <td>
-                <input type="text" size="5" id="cell00" placeholder="value" class="base-cell">
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
+    <table>
+      <tbody>
+        <tr>
+          <td colspan="1" align="center">
+            <div id="cell0" class="left-inner rose-div base-cell" align="left">Rose: <input type="text" size="6"
+                id="rose_value0" placeholder="value"><br><input type="number" size="3" min="0" max="5"
+                id="rose_child_count0" value="0"> children</div>
+          </td>
+        </tr>
+        <tr id="rose_children_row0"></tr>
+      </tbody>
     </table>
   </div>
+  <script type="text/javascript">
+    document.getElementById("rose_child_count0").oninput = function(ev) {
+      console.log("hello");
+    };
+  </script>
 
 </body>
 

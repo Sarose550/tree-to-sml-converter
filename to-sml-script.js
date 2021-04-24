@@ -18,6 +18,7 @@ function setTableWarningText(str) {
 function resetWarningText() {
   setTableWarningText("");
   setNegativeWarningText("");
+  setDepthErrorText("");
 }
 
 function setSMLOutputText(str) {
@@ -94,14 +95,14 @@ function generateInputTable() {
             cell.appendChild(newShrubCell(i, j));
             if (i < depth - 1) {
               document.getElementById(
-                "node_btn" + i + j
-              ).onchange = createUIBFunction(i, j);
+                "branch_btn" + i + j
+              ).onchange = createUncolorInputBorderFunction(i, j);
               document.getElementById(
-                "node_btn" + i + j
+                "branch_btn" + i + j
               ).onclick = createLeafEnableFunction(i, j, false);
               document.getElementById(
                 "leaf_btn" + i + j
-              ).onchange = createUIBFunction(i, j);
+              ).onchange = createUncolorInputBorderFunction(i, j);
               document.getElementById(
                 "leaf_btn" + i + j
               ).onclick = createLeafEnableFunction(i, j, true);
@@ -179,7 +180,7 @@ function getCell(i, j) {
   return document.getElementById("cell" + i + j);
 }
 
-function createUIBFunction(i, j) {
+function createUncolorInputBorderFunction(i, j) {
   return function () {
     uncolorInputBorder(i, j);
   };
@@ -211,7 +212,7 @@ function newTreeCell(i, j) {
   input.id = "cell" + i + j;
   input.placeholder = "value";
   colorCell(input, "base");
-  input.onchange = createUIBFunction(i, j);
+  input.onchange = createUncolorInputBorderFunction(i, j);
   return input;
 }
 
@@ -232,14 +233,14 @@ function newShrubCell(i, j) {
   div.align = "left";
   colorCell(div, "base");
 
-  // if not last level, cell has Node or Leaf option
+  // if not last level, cell has Branch or Leaf option
   if (i < depth - 1) {
-    // create Node radio button
-    var nodeBtn = document.createElement("input");
-    nodeBtn.type = "radio";
-    nodeBtn.id = "node_btn" + i + j;
-    nodeBtn.name = "radio" + i + j;
-    div.appendChild(nodeBtn);
+    // create Branch radio button
+    var branchBtn = document.createElement("input");
+    branchBtn.type = "radio";
+    branchBtn.id = "branch_btn" + i + j;
+    branchBtn.name = "radio" + i + j;
+    div.appendChild(branchBtn);
 
     div.innerHTML += "Branch<br/>";
 
@@ -297,7 +298,7 @@ function treeTextHelper(i, j) {
         i == depth - 1 ||
         document.getElementById("leaf_btn" + i + j).checked
       ) {
-        var leafij = getLeaf(i, j).value;
+        var leafij = getLeaf(i, j);
         colorCell(cellij, "valid");
         if (leafij.value == "")
           setTableWarningText("Warning: Empty leaf value");
@@ -306,8 +307,8 @@ function treeTextHelper(i, j) {
         }
         return "Leaf(" + leafij.value + ")";
       }
-      // node cell
-      if (document.getElementById("node_btn" + i + j).checked) {
+      // branch cell
+      if (document.getElementById("branch_btn" + i + j).checked) {
         colorCell(cellij, "valid");
         return (
           "Branch(" +
@@ -321,7 +322,7 @@ function treeTextHelper(i, j) {
       if (i == 0) {
         return "Empty";
       } else {
-        throw "Node without valid children";
+        throw "Branch without valid children";
       }
       break;
   }
@@ -331,27 +332,30 @@ function treeTextHelper(i, j) {
  * Called when 'Generate SML Text' button clicked
  */
 function generateText() {
-  // reset error text
-  resetWarningText();
-
-  // uncolor all input borders
-  for (var i = 0; i < depth; i++) {
-    for (var j = 0; j < Math.pow(2, i); j++) {
-      uncolorInputBorder(i, j);
+  if (activeTab === "rose") {
+    generateRoseText();
+  } else {
+    // reset error text
+    resetWarningText();
+    // uncolor all input borders
+    for (var i = 0; i < depth; i++) {
+      for (var j = 0; j < Math.pow(2, i); j++) {
+        uncolorInputBorder(i, j);
+      }
     }
-  }
 
-  // compute SML text from tree/shrub
-  var text;
-  try {
-    text = treeTextHelper(0, 0);
-  } catch (e) {
-    console.log(e);
-    text = "Node must have 2 valid children.";
-  }
+    // compute SML text from tree/shrub
+    var text;
+    try {
+      text = treeTextHelper(0, 0);
+    } catch (e) {
+      console.log(e);
+      text = "Node must have 2 valid children.";
+    }
 
-  // set SML output text
-  setSMLOutputText(text);
+    // set SML output text
+    setSMLOutputText(text);
+  }
 }
 
 /**
@@ -396,6 +400,7 @@ function openTab(evt, tabName) {
 
   if (tabName === "rose") {
     depthContent.style.display = "none";
+    document.getElementById("generate_sml_text_btn").disabled = false;
     generateRoseTable();
   } else {
     depthContent.style.display = "block";
