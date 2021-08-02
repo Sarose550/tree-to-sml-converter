@@ -88,6 +88,7 @@ function generateInputTable() {
         cell.colSpan = Math.pow(2, depth - 1 - i);
         cell.align = "center";
         switch (activeTab) {
+          case "lazytree":
           case "tree":
             cell.appendChild(newTreeCell(i, j));
             break;
@@ -272,6 +273,7 @@ function newShrubCell(i, j) {
 function treeTextHelper(i, j) {
   if (i == depth) {
     // shouldn't be possible for shrubs
+    if(activeTab == "lazytree") return "LazyTree.delay (fn () => LazyTree.LEAF)";
     return "Empty";
   }
   var cellij = getCell(i, j);
@@ -290,6 +292,22 @@ function treeTextHelper(i, j) {
         "," +
         treeTextHelper(i + 1, j * 2 + 1) +
         ")"
+      );
+      break;
+    case "lazytree":
+      if (cellij.value == "") return "LazyTree.delay (fn () => LazyTree.LEAF)";
+      colorCell(cellij, "valid");
+      if (cellij.value.includes("-")) {
+        setNegativeWarningText("Warning: Negative sign used instead of ~");
+      }
+      return (
+        "LazyTree.delay (fn () => LazyTree.NODE (" +
+        treeTextHelper(i + 1, j * 2) +
+        "," +
+        cellij.value +
+        "," +
+        treeTextHelper(i + 1, j * 2 + 1) +
+        "))"
       );
       break;
     case "shrub":
