@@ -30,6 +30,9 @@
     <button class="tab-links" onclick="openTab(event, 'rose')">
       Rose
     </button>
+    <button class="tab-links" onclick="openTab(event, 'lazytree')">
+      LazyTree
+    </button>
     <button class="tab-links" onclick="openTab(event, 'sml')">
       SML
     </button>
@@ -65,6 +68,19 @@
     <p class="left-inner type-p">
       <tt>datatype 'a rose =<br />
         &nbsp; Rose of 'a * 'a rose list</tt>
+    </p>
+  </div>
+
+  <div id="lazytree" class="tab-content">
+    <h1>LazyTree-to-SML</h1>
+    This lazyTree-to-text converter will fit the datatype:
+    <br />
+    <p class="left-inner type-p">
+      <tt>datatype 'a lazyTree = <br />
+      &nbsp; LT of unit -> 'a treeFront <br />
+      and 'a treeFront = <br />
+      &nbsp; LEAF <br />
+        | NODE of 'a lazyTree * 'a * 'a lazyTree</tt>
     </p>
   </div>
 
